@@ -73,15 +73,19 @@ impl Lori<TcpStream> {
     pub fn create_sockets(&mut self) -> Result<(), Box<dyn Error>> {
         info!("Creating Initial Sockets");
         // Create inital scokets
-        for i in 0..self.config.socket_count {
+        let mut sockets = (0..self.config.socket_count).into_par_iter().map(|i| {
+
             debug!("Creating Socket #{}", i);
 
             // Create socket
-            let sock = init_socket(&self.config)?;
+            let sock = init_socket(&self.config).unwrap();
 
-            // Add to list
-            self.connections.push(sock);
-        }
+            sock
+
+        }).collect::<Vec<TcpStream>>();
+
+        // Add to list
+        self.connections.append(&mut sockets);
 
         Ok(())
 
@@ -115,7 +119,7 @@ impl Lori<TcpStream> {
 
                 // Remove if socket fails
                 if result.is_err(){
-                    warn!("Socket Error, removing...");
+                    trace!("Socket Error, removing...");
                     self.connections.remove(i);
                 }
 
@@ -123,12 +127,23 @@ impl Lori<TcpStream> {
 
             trace!("Sockets: {}", self.connections.len());
 
-            for _ in 0..(self.config.socket_count - self.connections.len()) {
-                debug!("Recreating Socket...");
-                let sock = init_socket(&self.config)?;
+            let failed_socks = self.config.socket_count - self.connections.len();
 
-                self.connections.push(sock);
-            }
+            warn!("Failed Sockets: {}", failed_socks);
+
+            let mut sockets = (0..(failed_socks)).into_par_iter().map(|i| {
+
+                trace!("Recreating Socket...");
+
+                // Create socket
+                let sock = init_socket(&self.config).unwrap();
+
+                sock
+
+            }).collect::<Vec<TcpStream>>();
+
+            // Add to list
+            self.connections.append(&mut sockets);
 
 
             let delay = time::Duration::from_secs(15);
