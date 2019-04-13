@@ -6,8 +6,8 @@ edition = "2018"
 
 [dependencies]
 openssl = { version = "0.10", features = ["vendored"] }
-clap = "2.33.0"
 rand = "0.6.5"
 rayon = "1.0"
 pretty_env_logger = "0.3.0"
 log = "*"
+structopt = "0.2"
