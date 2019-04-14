@@ -1,22 +1,20 @@
 extern crate pretty_env_logger;
-#[macro_use] extern crate log;
-#[macro_use] extern crate structopt;
+// #[macro_use] extern crate log;
+// #[macro_use] extern crate structopt;
 
-use std::path::PathBuf;
 use structopt::StructOpt;
 
 use std::env;
 use std::error::Error;
-use std::net::{Ipv4Addr, SocketAddr, TcpStream};
 
 // /// Verbosity level
 // static LOG_LEVEL: usize = 0;
 use lori::*;
 
 
-/// A basic example
+/// A low bandwidth slow layer-7 dos tool
 #[derive(StructOpt, Debug)]
-#[structopt(name = "basic")]
+#[structopt(name = "lori")]
 struct Opt {
     // A flag, true if used in the command line. Note doc comment will
     // be used for the help message of the flag.
@@ -45,7 +43,7 @@ struct Opt {
     read_size: usize,
 
     #[structopt(long = "read")]
-    /// Activate Slow Reade mode
+    /// Activate Slow Read mode
     read: bool,
 
     /// Set port to attack

