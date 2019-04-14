@@ -1,6 +1,6 @@
 ![lori](./img/logo.png)
 
-`lori` is a low-bandwidth layer-7 HTTP DOS tool that handles connections in parallel.
+`lori` is a low-bandwidth layer-7 HTTP DOS tool that handles connections in parallel. __Written with 100% Safe Rust__ 
 
 ## 🎁 Features
 
