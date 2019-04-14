@@ -1,4 +1,5 @@
 ![lori](./img/logo.png)
+[![Build Status](https://travis-ci.org/ajmwagar/lori.svg?branch=master)](https://travis-ci.org/ajmwagar/lori)
 
 `lori` is a low-bandwidth layer-7 HTTP DOS tool that handles connections in parallel. __Written with 100% Safe Rust__ 
 
