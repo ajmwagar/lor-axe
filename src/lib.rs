@@ -43,7 +43,7 @@ pub const USER_AGENTS: &[&'static str]  = &[
 //     Tcp(TcpStream)
 // }
 
-#[derive(Debug)]
+#[derive(PartialEq, Debug)]
 pub enum DOSType {
     SlowLoris,
     SlowPost,
@@ -51,6 +51,7 @@ pub enum DOSType {
 }
 
 /// Config of the DOS attack
+#[derive(PartialEq, Debug)]
 pub struct Config {
     /// https toggle
     pub https: bool,
@@ -70,6 +71,7 @@ pub struct Config {
     pub read_size: usize
 }
 
+#[derive(PartialEq, Debug)]
 pub struct Lori<T> {
     /// Config of this lori instance
     config: Config,
@@ -206,7 +208,7 @@ impl Lori<TcpStream> {
     }
 }
 
-fn init_socket(config: &Config) -> Result<TcpStream, Box<dyn Error>>{
+pub fn init_socket(config: &Config) -> Result<TcpStream, Box<dyn Error>>{
     // Create stream as normal
     let mut stream = TcpStream::connect((&config.addr[..], config.port))?;
 
