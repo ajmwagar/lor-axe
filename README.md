@@ -2,7 +2,7 @@
 
 `lori` is a fast, low-bandwidth layer-7 Slow HTTP DOS tool that handles in parallel.
 
-## Features
+## 🎁 Features
 
 - Fully Configurable via `structopt`
 - Colored logs, via `pretty_env_logger`
@@ -11,7 +11,7 @@
 - Built in DNS
 - SSL (Coming Soon)
 
-### DOS Modes
+### 🖧 DOS Modes
 
 - __Slow HTTP (Slowloris)__: Holds connections open by slowly completing the http request after sending a complete header.
 - __Slow POST__: Sends a POST request with a content length of `1m` and then sends random data at a rate of 1 byte / <delay>.
