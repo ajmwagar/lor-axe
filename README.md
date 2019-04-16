@@ -39,16 +39,16 @@ loraxe --help
 
 ```bash
 # Start a Slowloris attack on 0.0.0.0:8080 with 200 concurrent connections
-lori 0.0.0.0 -p 8080 -s 200
+loraxe 0.0.0.0 -p 8080 -s 200
 
 # Start a HTTP POST attack on 0.0.0.0:80 with 150 concurrent connections
-lori 0.0.0.0 --post
+loraxe 0.0.0.0 --post
 
 # Start a Slow READ attack on 0.0.0.0:80 with 150 concurrent connections and a read buffer of 8 bytes
-lori 0.0.0.0 --read -b 8
+loraxe 0.0.0.0 --read -b 8
 
 # Print a help menu
-lori --help
+loraxe --help
 ```
 
 ## Disclaimer
