@@ -74,18 +74,18 @@ pub struct Config {
 }
 
 #[derive(PartialEq, Debug)]
-pub struct Lori<T> {
+pub struct Loraxe<T> {
     /// Config of this lori instance
     config: Config,
     /// Vector of connections
     connections: Vec<T>,
 }
 
-impl Lori<TcpStream> {
+impl Loraxe<TcpStream> {
     /// Create a new lori instance
     pub fn new(config: Config) -> Self {
         // Create the lori
-        Lori {
+        Loraxe {
             connections: Vec::with_capacity(config.socket_count),
             config,
         }

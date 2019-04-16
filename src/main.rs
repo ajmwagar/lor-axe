@@ -9,12 +9,12 @@ use std::error::Error;
 
 // /// Verbosity level
 // static LOG_LEVEL: usize = 0;
-use lori::*;
+use loraxe::*;
 
 
 /// A low bandwidth slow layer-7 dos tool
 #[derive(StructOpt, Debug)]
-#[structopt(name = "lori")]
+#[structopt(name = "loraxe")]
 struct Opt {
     // A flag, true if used in the command line. Note doc comment will
     // be used for the help message of the flag.
@@ -67,7 +67,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     //Set the `RUST_LOG` var if none is provided
     if env::var("RUST_LOG").is_err() {
-        env::set_var("RUST_LOG", "lori=INFO");
+        env::set_var("RUST_LOG", "loraxe=INFO");
     }
 
     pretty_env_logger::init_timed();
@@ -86,7 +86,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     //     3 | _ => println!("Don't be crazy"),
     // }
 
-    let dos_type = if opt.post { DOSType::SlowPost } else if opt.read { DOSType::SlowRead } else { DOSType::SlowLoris };
+    let dos_type = if opt.post { DOSType::SlowPost } else if opt.read { DOSType::SlowRead } else { DOSType::SlowLoris};
 
 
     // TODO Create config from CLI arguments using Clap
@@ -102,13 +102,13 @@ fn main() -> Result<(), Box<dyn Error>> {
         read_size: opt.read_size
     };
 
-    let mut lori = Lori::new(config);
+    let mut loraxe = Loraxe::new(config);
 
     // Create initial sockets
-    lori.create_sockets()?;
+    loraxe.create_sockets()?;
 
     // Start dos
-    lori.attack()?;
+    loraxe.attack()?;
 
     Ok(())
 }
