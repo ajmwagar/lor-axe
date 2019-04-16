@@ -3,7 +3,7 @@ extern crate pretty_env_logger;
 // #[macro_use] extern crate structopt;
 
 use structopt::StructOpt;
-
+use std::time::Duration;
 use std::env;
 use std::error::Error;
 
@@ -37,6 +37,10 @@ struct Opt {
     /// Set number of sockets
     #[structopt(short = "s", long = "sockets", default_value = "150")]
     sockets: usize,
+
+    /// Connection timeout in seconds
+    #[structopt(short = "t", long = "timeout", default_value = "10")]
+    sockets_delay: u64,
 
     #[structopt(short = "b", long = "buffer", default_value = "32")]
     /// Set read-buffer size
@@ -87,6 +91,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // TODO Create config from CLI arguments using Clap
     let config = Config {
+        sock_timeout: Duration::from_secs(opt.sockets_delay),
         https: opt.ssl,
         addr: opt.ip,
         port: opt.port,
@@ -98,7 +103,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     };
 
     let mut lori = Lori::new(config);
-
 
     // Create initial sockets
     lori.create_sockets()?;
