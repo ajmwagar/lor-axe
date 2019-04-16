@@ -1,12 +1,12 @@
-![lori](./img/logo.png)
+![loraxe](./img/logo.png)
 
 
-[![Build Status](https://travis-ci.org/ajmwagar/lori.svg?branch=master)](https://travis-ci.org/ajmwagar/lori)
-[![codecov](https://codecov.io/gh/ajmwagar/lori/branch/master/graph/badge.svg)](https://codecov.io/gh/ajmwagar/lori)
-[![dependency status](https://deps.rs/repo/github/ajmwagar/lori/status.svg)](https://deps.rs/repo/github/ajmwagar/lori)
+[![Build Status](https://travis-ci.org/ajmwagar/lor-axe.svg?branch=master)](https://travis-ci.org/ajmwagar/lor-axe)
+[![codecov](https://codecov.io/gh/ajmwagar/lor-axe/branch/master/graph/badge.svg)](https://codecov.io/gh/ajmwagar/lor-axe)
+[![dependency status](https://deps.rs/repo/github/ajmwagar/lor-axe/status.svg)](https://deps.rs/repo/github/ajmwagar/lor-axe)
 
 
-`lori` is a low-bandwidth layer-7 HTTP DOS tool that handles connections in parallel. __Written with 100% Safe Rust__ 
+`loraxe` is a low-bandwidth layer-7 HTTP DOS tool that handles connections in parallel. __Written with 100% Safe Rust__ 
 
 ## 🎁 Features
 
@@ -26,13 +26,13 @@
 
 ## 📦 Installation
 
-The installation of `lori` is easy if you have `cargo` installed.
+The installation of `lor-axe` is easy if you have `cargo` installed.
 
 ```bash
-git clone https://github.com/ajmwagar/lori
-cd lori
+git clone https://github.com/ajmwagar/lor-axe
+cd lor-axe
 cargo install --path .
-lori --help
+lor-axe --help
 ```
 
 ## 💯 Usage
