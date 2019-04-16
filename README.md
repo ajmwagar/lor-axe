@@ -32,7 +32,7 @@ The installation of `lor-axe` is easy if you have `cargo` installed.
 git clone https://github.com/ajmwagar/lor-axe
 cd lor-axe
 cargo install --path .
-lor-axe --help
+loraxe --help
 ```
 
 ## 💯 Usage
