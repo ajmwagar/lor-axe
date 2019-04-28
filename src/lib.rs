@@ -45,14 +45,16 @@ pub const USER_AGENTS: &[&'static str]  = &[
 // }
 
 #[derive(PartialEq, Debug)]
+/// Type of DOS attack to use, either a SlowLoris (Slow HTTP Get), SlowPost, (Slow HTTP POST), or a
+/// SlowRead (WIP fast HTTP GET but client takes long time to read)
 pub enum DOSType {
     SlowLoris,
     SlowPost,
     SlowRead
 }
 
-/// Config of the DOS attack
 #[derive(PartialEq, Debug)]
+/// Config of the DOS attack
 pub struct Config {
     pub sock_timeout: Duration,
     /// https toggle
@@ -74,17 +76,18 @@ pub struct Config {
 }
 
 #[derive(PartialEq, Debug)]
+/// Loraxe DOS object
 pub struct Loraxe<T> {
-    /// Config of this lori instance
-    config: Config,
+    /// Config of the loraxe
+    pub config: Config,
     /// Vector of connections
-    connections: Vec<T>,
+    pub connections: Vec<T>,
 }
 
 impl Loraxe<TcpStream> {
-    /// Create a new lori instance
+    /// Create a new loraxe instance
     pub fn new(config: Config) -> Self {
-        // Create the lori
+        // Create the loraxe
         Loraxe {
             connections: Vec::with_capacity(config.socket_count),
             config,
@@ -247,6 +250,7 @@ impl Loraxe<TcpStream> {
         }
     }
 
+    /// Create a new TCP Socket, returns a result with the socket or an error
     pub fn init_socket(config: &Config, url: &SocketAddr) -> Result<TcpStream, Box<dyn Error>>{
 
         // Create stream as normal
@@ -256,7 +260,9 @@ impl Loraxe<TcpStream> {
 
         let ua: &'static str;
 
+        // Random User-Agent flag
         if config.rand_ua {
+            // Pick a random user-agent
             ua = USER_AGENTS.choose(&mut rng).unwrap();
         }
         else {
