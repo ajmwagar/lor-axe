@@ -101,7 +101,7 @@ impl Loraxe<TcpStream> {
 
         let sock_addr: SocketAddr = url.to_socket_addrs()?.collect::<Vec<SocketAddr>>()[0];
 
-        println!("{:?}", sock_addr);
+        // println!("{:?}", sock_addr);
 
         // Create inital scokets
         let sockets = (0..self.config.socket_count).into_par_iter().map(|i| {
