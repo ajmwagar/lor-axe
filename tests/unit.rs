@@ -1,11 +1,14 @@
-use lori::*;
+use loraxe::*;
+use std::time::Duration;
+use std::net::{SocketAddr, ToSocketAddrs};
 
 fn config() -> Config {
     Config {
         https: false,
+        sock_timeout: Duration::from_secs(10),
         delay: 15,
-        addr: "0.0.0.0".to_string(),
-        port: 8000,
+        addr: "google.com".to_string(),
+        port: 80,
         rand_ua: true,
         read_size: 32,
         socket_count: 5,
@@ -16,36 +19,42 @@ fn config() -> Config {
 #[test]
 /// Create a single socket
 fn create_socket() {
+
     let config = config();
-    assert!(lori::init_socket(&config).is_ok())
-        // unimplemented!()
+
+    let url = [config.addr.clone(), config.port.to_string()].join(":");
+
+    let sock_addr: SocketAddr = url.to_socket_addrs().unwrap().collect::<Vec<SocketAddr>>()[0];
+    let result = init_socket(&config, &sock_addr);
+
+    println!("{:?}", result);
+
+    assert!(result.is_ok())
 }
 
 #[test]
 /// Create a new lori
-fn new_lori() {
+fn new_loraxe() {
     let config = config();
-    let mut lori = Lori::new(config);
+    let mut loraxe = Loraxe::new(config);
 
-    // assert_eq!(lori, lori);
     assert!(true);
 }
 
 #[test]
 /// Create new lori sockets
-fn lori_socks() {
+fn loraxe_socks() {
     let config = config();
-    let mut lori = Lori::new(config);
+    let mut loraxe = Loraxe::new(config);
 
-    assert!(lori.create_sockets().is_ok());
+    assert!(loraxe.create_sockets().is_ok());
 }
 
 #[test]
 /// Create new lori sockets
-fn lori_attack() {
+fn loraxe_attack() {
     let config = config();
-    let mut lori = Lori::new(config);
+    let mut loraxe = Loraxe::new(config);
 
-    assert!(lori.create_sockets().is_ok());
-    // assert!(lori.attack().is_ok());
+    assert!(loraxe.create_sockets().is_ok());
 }
