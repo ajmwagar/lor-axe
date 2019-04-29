@@ -1,7 +1,7 @@
 extern crate pretty_env_logger;
+extern crate structopt;
+extern crate rayon;
 #[macro_use] extern crate log;
-// #[macro_use] extern crate log;
-// #[macro_use] extern crate structopt;
 
 use rayon::prelude::*;
 use std::net::{UdpSocket, SocketAddr, ToSocketAddrs};
