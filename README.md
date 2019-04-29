@@ -6,7 +6,7 @@
 [![dependency status](https://deps.rs/repo/github/ajmwagar/lor-axe/status.svg)](https://deps.rs/repo/github/ajmwagar/lor-axe)
 
 
-`loraxe` is a low-bandwidth layer-7 HTTP DOS tool that handles connections in parallel. __Written with 100% Safe Rust__ 
+`loraxe` is a multi-threaded, low-bandwidth HTTP DOS tool that handles connections and sockets in parallel. __Written with 100% Safe Rust__ 
 
 ## 🎁 Features
 
@@ -43,6 +43,7 @@ loraxe --help
 
 ```bash
 cargo install loraxe
+loraxe --help
 ```
 
 ## 💯 Usage
