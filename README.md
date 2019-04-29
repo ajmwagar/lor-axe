@@ -10,9 +10,9 @@
 
 ## 🎁 Features
 
-- Fully Configurable via `structopt`
-- Colored logs, via `pretty_env_logger`
-- Create/Recreate sockets in parallel via `rayon`
+- Fully Configurable CLI options via `structopt`
+- Colored logs, via `pretty_env_logger` (set `RUST_LOG` for more verbose logging)
+- Sockets are handled in parallel via `rayon`
 - Low-bandwidth usage
 - Built in DNS
 - SSL (Coming Soon)
@@ -22,17 +22,27 @@
 - __Slow HTTP (Slowloris)__: Holds connections open by slowly completing the http request after sending a complete header.
 - __Slow POST__: Sends a POST request with a content length of `1m` and then sends random data at a rate of 1 byte / <delay>.
 - __[WIP] Slow READ__: Requests a file larger than a servers given send buffer (~65Kb - 124Kb) and then reads the result at a user defined rate.
+- __UDP Flood mode__: Sends a UDP packet to all ports on a given host. The host must respond with an error saying `path not found`. Which can cripple some machines
 
 
 ## 📦 Installation
 
 The installation of `lor-axe` is easy if you have `cargo` installed.
 
+
+**Build from source:**
+
 ```bash
 git clone https://github.com/ajmwagar/lor-axe
 cd lor-axe
 cargo install --path .
 loraxe --help
+```
+
+**Use `cargo`:**
+
+```bash
+cargo install loraxe
 ```
 
 ## 💯 Usage
@@ -52,6 +62,7 @@ loraxe --help
 ```
 
 ## Disclaimer
-Any actions and or activities related to the code provided is solely your responsibility.The misuse of the information in this website can result in criminal charges brought against the persons in question. The authors will not be held responsible in the event any criminal charges be brought against any individuals misusing the information in this tool to break the law.
+
+Any actions and or activities related to the code provided is solely your responsibility. The misuse of the information in this website can result in criminal charges brought against the persons in question. The authors will not be held responsible in the event any criminal charges be brought against any individuals misusing the information in this tool to break the law.
 
 
