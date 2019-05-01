@@ -22,7 +22,7 @@
 - __Slow HTTP (Slowloris)__: Holds connections open by slowly completing the http request after sending a complete header.
 - __Slow POST__: Sends a POST request with a content length of `1m` and then sends random data at a rate of 1 byte / <delay>.
 - __[WIP] Slow READ__: Requests a file larger than a servers given send buffer (~65Kb - 124Kb) and then reads the result at a user defined rate.
-- __UDP Flood mode__: Sends a UDP packet to all ports on a given host. The host must respond with an error saying `path not found`. Which can cripple some machines
+- __UDP Flood mode__: Sends a UDP packet to all ports on a given host. If the port is closed the host must respond with an error saying `ICMP error packet`. Spamming UDP connections on closed ports can cripple some machines very quickly.
 
 
 ## 📦 Installation
@@ -58,7 +58,7 @@ loraxe 0.0.0.0 --post
 # Start a Slow READ attack on 0.0.0.0:80 with 150 concurrent connections and a read buffer of 8 bytes
 loraxe 0.0.0.0 --read -b 8
 
-# Start a UDP flood attack on 0.0.0.0:80 with 150 concurrent connections.
+# Start a UDP flood attack on 0.0.0.0 with 150 concurrent connections.
 loraxe 0.0.0.0 -f
 
 # Print a help menu
