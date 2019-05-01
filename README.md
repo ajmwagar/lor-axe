@@ -22,7 +22,7 @@
 - __Slow HTTP (Slowloris)__: Holds connections open by slowly completing the http request after sending a complete header.
 - __Slow POST__: Sends a POST request with a content length of `1m` and then sends random data at a rate of 1 byte / <delay>.
 - __[WIP] Slow READ__: Requests a file larger than a servers given send buffer (~65Kb - 124Kb) and then reads the result at a user defined rate.
-- __UDP Flood mode__: Sends a UDP packet to all ports on a given host. If the port is closed the host must respond with an error saying `ICMP error packet`. Spamming UDP connections on closed ports can cripple some machines very quickly.
+- __UDP Flood mode__: Sends a UDP packet to all ports on a given host. If the port is closed the host must respond with an error saying `ICMP error packet`. Spamming UDP connections on closed ports can cripple **some** (as reddit user /u/UndeniablyRexer pointed out) machines very quickly.
 
 
 ## 📦 Installation
