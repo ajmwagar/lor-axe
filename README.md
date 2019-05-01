@@ -58,6 +58,9 @@ loraxe 0.0.0.0 --post
 # Start a Slow READ attack on 0.0.0.0:80 with 150 concurrent connections and a read buffer of 8 bytes
 loraxe 0.0.0.0 --read -b 8
 
+# Start a UDP flood attack on 0.0.0.0:80 with 150 concurrent connections.
+loraxe 0.0.0.0 -f
+
 # Print a help menu
 loraxe --help
 ```
